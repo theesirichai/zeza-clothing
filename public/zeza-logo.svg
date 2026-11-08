@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080" width="1080" height="1080">
+  <!-- Deep Pitch Black Background -->
+  <rect width="1080" height="1080" fill="#000000" />
+  
+  <!-- Outer Luxury Circular Disc -->
+  <circle cx="540" cy="540" r="490" fill="#0A0A0B" stroke="#FFFFFF" stroke-width="3" stroke-opacity="0.9" />
+  
+  <!-- Inner Delicate Accent Ring -->
+  <circle cx="540" cy="540" r="460" fill="none" stroke="#FFFFFF" stroke-width="1.2" stroke-opacity="0.25" stroke-dasharray="6 6" />
+  
+  <!-- Inner Hairline Ring -->
+  <circle cx="540" cy="540" r="440" fill="none" stroke="#FFFFFF" stroke-width="1" stroke-opacity="0.1" />
+
+  <!-- Diamond Star Pin Top Accent -->
+  <g transform="translate(540, 345)">
+    <path d="M 0 -22 L 6 0 L 22 6 L 6 12 L 0 34 L -6 12 L -22 6 L -6 0 Z" fill="#FFFFFF" />
+    <circle cx="0" cy="6" r="2" fill="#0A0A0B" />
+  </g>
+  
+  <!-- Brand Name: ZEZA -->
+  <text x="540" y="495" text-anchor="middle" fill="#FFFFFF" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', 'Prompt', sans-serif" font-size="96" font-weight="800" letter-spacing="26">ZEZA</text>
+  
+  <!-- Divider Hairline with Diamond Center -->
+  <line x1="310" y1="540" x2="490" y2="540" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="1.5" />
+  <circle cx="540" cy="540" r="4" fill="#FFFFFF" fill-opacity="0.8" />
+  <line x1="590" y1="540" x2="770" y2="540" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="1.5" />
+  
+  <!-- Category Sub-title: CLOTHING -->
+  <text x="540" y="605" text-anchor="middle" fill="#FFFFFF" fill-opacity="0.9" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif" font-size="26" font-weight="600" letter-spacing="16">C L O T H I N G</text>
+  
+  <!-- Origin Location: KHON KAEN • EST. 2024 -->
+  <text x="540" y="680" text-anchor="middle" fill="#86868B" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif" font-size="17" font-weight="500" letter-spacing="9">KHON KAEN • EST. 2024</text>
+  
+  <!-- Bottom Micro Accent -->
+  <circle cx="540" cy="735" r="3" fill="#FFFFFF" fill-opacity="0.3" />
+</svg>
