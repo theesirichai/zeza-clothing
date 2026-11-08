@@ -69,7 +69,7 @@ export default function ProductFormModal({ isOpen, onClose, initialData = null, 
         existingImages.map((url, i) => ({
           id: `existing-${i}`,
           url,
-          file: null,
+          dataUrl: url,
           isNew: false
         }))
       );
@@ -106,25 +106,30 @@ export default function ProductFormModal({ isOpen, onClose, initialData = null, 
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
 
+    // จำกัดไม่เกิน 8 รูปต่อสินค้า เพื่อความรวดเร็วและปลอดภัย
+    if (photoList.length + files.length > 8) {
+      setError('สามารถอัปโหลดรูปได้สูงสุด 8 รูปต่อสินค้า');
+      return;
+    }
+
     setCompressing(true);
     setError('');
 
     try {
       const newItems = [];
       for (const file of files) {
-        if (!file.type.startsWith('image/')) continue;
-
         const compressed = await compressImage(file, {
-          maxWidth: 960,
-          maxHeight: 1200,
-          quality: 0.78
+          maxWidth: 720,
+          maxHeight: 900,
+          targetMaxBytes: 55 * 1024
         });
 
         newItems.push({
           id: `new-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
-          url: compressed.previewUrl,
-          file: compressed.file,
+          url: compressed.dataUrl,
+          dataUrl: compressed.dataUrl,
           isNew: true,
+          sizeBytes: compressed.compressedSize,
           sizeText: formatFileSize(compressed.compressedSize),
           savedPercent: compressed.savedPercent
         });
@@ -133,7 +138,7 @@ export default function ProductFormModal({ isOpen, onClose, initialData = null, 
       setPhotoList((prev) => [...prev, ...newItems]);
     } catch (err) {
       console.error(err);
-      setError('เกิดข้อผิดพลาดในการประมวลผลรูปภาพ: ' + err.message);
+      setError(err.message || 'เกิดข้อผิดพลาดในการประมวลผลรูปภาพ');
     } finally {
       setCompressing(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -197,7 +202,7 @@ export default function ProductFormModal({ isOpen, onClose, initialData = null, 
         }
       };
 
-      const imagePayload = photoList.map((item) => (item.isNew ? item.file : item.url));
+      const imagePayload = photoList.map((item) => item.dataUrl || item.url);
 
       if (isEditing) {
         await updateProduct(initialData.id, payload, imagePayload);
@@ -271,10 +276,10 @@ export default function ProductFormModal({ isOpen, onClose, initialData = null, 
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs font-bold uppercase tracking-wider text-stone-700 flex items-center gap-1.5">
                 <Layers className="w-4 h-4 text-blue-600" />
-                <span>รูปถ่ายสินค้า ({photoList.length} รูป)</span>
+                <span>รูปถ่ายสินค้า ({photoList.length}/8 รูป)</span>
               </label>
-              <span className="text-[11px] text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                ⚡ บีบอัด WebP อัตโนมัติ โหลดเร็ว
+              <span className="text-[11px] text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                ⚡ บีบอัด HD โหลดไว (สูงสุด 8 รูป)
               </span>
             </div>
 
@@ -283,7 +288,7 @@ export default function ProductFormModal({ isOpen, onClose, initialData = null, 
               type="file"
               ref={fileInputRef}
               onChange={handleFilesSelected}
-              accept="image/*"
+              accept="image/*,.heic,.heif,.jfif"
               multiple
               className="hidden"
             />

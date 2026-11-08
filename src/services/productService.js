@@ -56,22 +56,54 @@ export function subscribeProducts(onProductsChange, onError) {
 }
 
 /**
- * บีบอัดรูปภาพให้เบาที่สุด (~50-80KB ต่อรูป) ด้วย WebP
+ * บีบอัดรูปภาพให้อยู่ในขนาดปลอดภัยพิเศษ (~35KB-55KB ต่อรูป)
  */
 export async function processImage(fileOrUrl) {
   if (!fileOrUrl) return null;
 
+  // ถ้าเป็น dataUrl หรือ URL ภายนอกอยู่แล้ว
   if (typeof fileOrUrl === 'string') {
+    // ถ้าเป็น base64 ขนาดใหญ่เกิน 80KB ให้บีบอัดลงมา
+    if (fileOrUrl.startsWith('data:image/') && fileOrUrl.length > 100000) {
+      try {
+        const res = await fetch(fileOrUrl);
+        const blob = await res.blob();
+        const compressed = await compressImage(blob, {
+          maxWidth: 720,
+          maxHeight: 900,
+          targetMaxBytes: 55 * 1024
+        });
+        return compressed.dataUrl;
+      } catch (e) {
+        return fileOrUrl;
+      }
+    }
     return fileOrUrl;
   }
 
   const compressionResult = await compressImage(fileOrUrl, {
-    maxWidth: 960,
-    maxHeight: 1200,
-    quality: 0.78
+    maxWidth: 720,
+    maxHeight: 900,
+    targetMaxBytes: 55 * 1024
   });
 
   return compressionResult.dataUrl;
+}
+
+/**
+ * ตรวจสอบขนาดของ Payload เพื่อป้องกันไม่ให้เกินขีดจำกัด 1MB ของ Firestore
+ */
+function validatePayloadSize(payload) {
+  const jsonStr = JSON.stringify(payload);
+  const totalBytes = new Blob([jsonStr]).size;
+
+  // เผื่อความปลอดภัยไว้ที่ 900KB (Firestore limit คือ 1,048,576 bytes)
+  if (totalBytes > 900 * 1024) {
+    const totalKB = Math.round(totalBytes / 1024);
+    throw new Error(
+      `ขนาดรวมของข้อมูลและรูปภาพ (${totalKB} KB) เกินโควต้าความจุของระบบ กรุณาลดจำนวนรูปหรือเลือกรูปอื่น`
+    );
+  }
 }
 
 /**
@@ -102,6 +134,9 @@ export async function addProduct(productData, imageList = []) {
     isUnique: productData.isUnique !== false,
     createdAt: serverTimestamp()
   };
+
+  // ตรวจสอบขนาดก่อนส่ง
+  validatePayloadSize(newProduct);
 
   const docRef = await addDoc(collection(db, 'products'), newProduct);
   return { id: docRef.id, ...newProduct };
@@ -135,6 +170,9 @@ export async function updateProduct(id, productData, imageList = null) {
     originalPrice: productData.originalPrice ? Number(productData.originalPrice) : null,
     updatedAt: serverTimestamp()
   };
+
+  // ตรวจสอบขนาดก่อนส่ง
+  validatePayloadSize(updatedFields);
 
   const docRef = doc(db, 'products', String(id));
   await updateDoc(docRef, updatedFields);
